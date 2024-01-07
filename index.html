@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: 'kalam-regular';
+            src: url('resources/fonts/Kalam-Regular.otf');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-drag: none;
+            font-family: 'kalam-regular';
+        }
+        html {
+            font-size: 16px;
+        }
+        .container {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('resources/images/paper-texture.jpg');
+            background-repeat: repeat;
+            background-size: 10rem;
+            display: grid;
+            place-items: center;
+        }
+        .game {
+            width: 60%;
+            min-width: 50rem;
+            height: 100%;
+            display: grid;
+            grid-template-rows: 2fr 1fr;
+        }
+        .stage {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .controls {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            justify-items: center;
+        }
+
+        .player {
+            background-image: url('resources/images/player-hand.png');
+            width: 5rem;
+            height: 5rem;
+            background-size: 15rem;
+            position: absolute;
+            left: 15rem;
+            top: 50%;
+        }
+        .computer {
+            background-image: url('resources/images/computer-hand.png');
+            width: 5rem;
+            height: 5rem;
+            background-size: 15rem;
+            position: absolute;
+            right: 15rem;
+            top: 50%;
+        }
+        .guide {
+            font-size: 1rem;
+            position: absolute;
+            left: 50%;
+            top: 80%;
+            transform: translateX(-50%);
+            color: #555555;
+        }
+        
+        .button {
+            border: 2px solid #232323;
+            display: inline-block;
+            min-width: 7rem;
+            cursor: pointer;
+            margin: 0 0.25rem;
+        }
+        .reset {
+            display: none;
+        }
+        .button p {
+            font-size: 1rem;
+            margin: 0.5rem 1rem;
+            text-align: center;
+        }
+
+        /* ANIMATIONS */
+
+        .PlayerCharge {
+            animation: PlayerCharge 2000ms 1;
+        }
+        .ComputerCharge {
+            animation: ComputerCharge 2000ms 1;
+        }
+        .Death {
+            animation: Death 1000ms 1;
+        }
+
+        @keyframes PlayerCharge {
+            0% {
+                transform:rotateZ(0deg);
+            }
+            30% {
+                transform: rotateZ(-45deg);
+            }
+            35% {
+                transform:rotateZ(0deg);
+            }
+            60% {
+                transform: rotateZ(-45deg);
+            }
+            65% {
+                transform:rotateZ(0deg);
+            }
+            95% {
+                transform: rotateZ(-45deg);
+            }
+            100% {
+                transform: rotateZ(0deg);
+            }
+        }
+
+        @keyframes ComputerCharge {
+            0% {
+                transform:rotateZ(0deg);
+            }
+            30% {
+                transform: rotateZ(45deg);
+            }
+            35% {
+                transform:rotateZ(0deg);
+            }
+            60% {
+                transform: rotateZ(45deg);
+            }
+            65% {
+                transform:rotateZ(0deg);
+            }
+            95% {
+                transform: rotateZ(45deg);
+            }
+            100% {
+                transform: rotateZ(0deg);
+            }
+        }
+
+        @keyframes Death {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.25);
+            }
+            100% {
+                transform: scale(0);
+            }
+        }
+
+        @media only screen and (max-width: 600px) {
+            body {
+                font-size: 12px;
+            }
+            .game {
+                width: 100%;
+                min-width: 100%;
+                height: 100%;
+                display: grid;
+                grid-template-rows: 2fr 1fr;
+            }
+            .player {
+                left: 3rem;
+            }
+            .computer {
+                right: 3rem;
+            }
+            .buttons {
+                width: 100%;
+            }
+            .button {
+                display: block;
+                margin: 0.25rem 1rem;
+            }
+            .reset {
+                display: none;
+            }
+        }
+
+        @media only screen and (min-width: 601px) and (max-width: 900px) {
+            body {
+                font-size: 14px;
+            }
+            .game {
+                width: 100%;
+                min-width: 100%;
+                height: 100%;
+                display: grid;
+                grid-template-rows: 2fr 1fr;
+            }
+            .player {
+                left: 13rem;
+            }
+            .computer {
+                right: 13rem;
+            }
+            .button {
+                display: inline-block;
+                margin: 0.25rem 1rem;
+            }
+            .reset {
+                display: none;
+            }
+        }
+
+        @media only screen and (min-width: 901px) {
+            body {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game">
+            <div class="stage">
+                <div class="player"></div>
+                <div class="computer"></div>
+                <div class="guide">Choose your move.</div>
+            </div>
+            <div class="controls">
+                <div class="buttons">
+                    <div class="button moveButton rock" onclick="game.play(1)"><p>Rock</p></div>
+                    <div class="button moveButton paper" onclick="game.play(2)"><p>Paper</p></div>
+                    <div class="button moveButton scissors" onclick="game.play(3)"><p>Scissors</p></div>
+                    <div class="button reset" onclick="game.reset()"><p>Reset</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PLAYER
+        // 0rem = rock
+        // 5rem = paper
+        // 10rem = scissors
+
+        // COMPUTER
+        // 0rem = rock
+        // 10rem = paper
+        // 5rem = scissors
+
+        const pl = new Player();
+        const com = new Computer();
+        const game = new Game(pl, com);
+
+        function Player() {
+            let hand = document.querySelector('.player');
+            
+            this.reset = () => {
+                hand.style.transform = 'scale(1)';
+                hand.style.backgroundPosition = '0rem';
+                hand.classList.remove('ComputerCharge');
+                hand.classList.remove('Death');
+            }
+
+            // plays the attack animation of the player
+            this.attack = (move) => {
+                hand.classList.add('PlayerCharge');
+
+                setTimeout(function() {
+                    hand.classList.remove('PlayerCharge');
+                    hand.classList.remove('Death');
+
+                    // adjusts the bg-image to match the graphics of the move
+                    // 1 = rock
+                    // 2 = paper
+                    // 3 = scissors
+                    if(move == 1) {
+                        hand.style.backgroundPosition = '0rem';
+                    } else if(move == 2) {
+                        hand.style.backgroundPosition = '5rem';
+                    } else if(move == 3) {
+                        hand.style.backgroundPosition = '10rem';
+                    }
+                }, 1950);
+            };
+
+            // plays the death animation of the player
+            this.death = () => {
+                hand.classList.add('Death');
+
+                setTimeout(function() {
+                    hand.classList.remove('PlayerCharge');
+                    hand.classList.remove('Death');
+                    hand.style.transform = 'scale(0)';
+                }, 950);
+            };
+        }
+
+        function Computer() {
+            let hand = document.querySelector('.computer');;
+
+            this.reset = () => {
+                hand.style.transform = 'scale(1)';
+                hand.style.backgroundPosition = '0rem';
+                hand.classList.remove('ComputerCharge');
+                hand.classList.remove('Death');
+            }
+
+            // plays the attack animation of the computer
+            this.attack = (move) => {
+                hand.classList.add('ComputerCharge');
+
+                setTimeout(function() {
+                    hand.classList.remove('ComputerCharge');
+                    hand.classList.remove('Death');
+
+                    // adjusts the bg-image to match the graphics of the move
+                    // 1 = rock
+                    // 2 = paper
+                    // 3 = scissors
+                    if(move == 1) {
+                        hand.style.backgroundPosition = '0rem';
+                    } else if(move == 2) {
+                        hand.style.backgroundPosition = '10rem';
+                    } else if(move == 3) {
+                        hand.style.backgroundPosition = '5rem';
+                    }
+                }, 1950);
+            };
+
+            // plays the death animation of the computer
+            this.death = () => {
+                hand.classList.add('Death');
+
+                setTimeout(function() {
+                    hand.classList.remove('ComputerCharge');
+                    hand.classList.remove('Death');
+                    hand.style.transform = 'scale(0)';
+                }, 950);
+            };
+        }
+
+        function Game(Player, Computer) {
+            this.play = (move) => {
+                let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+                
+                // hide the guide
+                let guide = document.querySelector('.guide');
+                guide.innerHTML = '';
+
+                // disable the move buttons for the player
+                let moveButtons = document.querySelectorAll('.moveButton');
+                moveButtons.forEach((button) => {
+                    button.style.filter = 'opacity(0.5)';
+                    button.style.pointerEvents = 'none';
+                });
+
+                // set and decide the moves for the player and computer
+                let playerMove = move;
+                let computerMove = Math.floor(Math.random() * 3) + 1;
+
+                pl.attack(playerMove);
+                com.attack(computerMove);
+                
+                // wait for the attack animations to finish then decide the winner
+                setTimeout(function() {
+                    let resetButton = document.querySelector('.reset');
+
+                    // check the winner
+                    if(playerMove === computerMove) {
+                        Player.death();
+                        Computer.death();
+
+                        guide.innerHTML = 'It\'s a tie.';
+                        moveButtons.forEach((button) => {
+                            button.style.display = 'none';
+                        });
+
+                        // wait for the death animations to finish then hide the move buttons and show the reset button
+                        setTimeout(function() {
+                            moveButtons.forEach((button) => {
+                                button.style.display = 'none';
+                            });
+
+                            // show the reset button based on the screen size
+                            if (windowWidth < 600) {
+                                resetButton.style.display = 'block';
+                            } else if (windowWidth >= 600 && windowWidth < 900) {
+                                resetButton.style.display = 'inline-block';
+                            } else {
+                                resetButton.style.display = 'inline-block';
+                            }
+                        }, 1000);
+                    } else if( (playerMove === 1 && computerMove === 3) || (playerMove === 2 && computerMove === 1) || (playerMove === 3 && computerMove === 2) ) {
+                        Computer.death();
+                        guide.innerHTML = 'You win.';
+                        // wait for the death animations to finish then hide the move buttons and show the reset button
+                        setTimeout(function() {
+                            moveButtons.forEach((button) => {
+                                button.style.display = 'none';
+                            });
+
+                            // show the reset button based on the screen size
+                            if (windowWidth < 600) {
+                                resetButton.style.display = 'block';
+                            } else if (windowWidth >= 600 && windowWidth < 900) {
+                                resetButton.style.display = 'inline-block';
+                            } else {
+                                resetButton.style.display = 'inline-block';
+                            }
+                        }, 1000);
+                    }
+                    else {
+                        Player.death();
+                        guide.innerHTML = 'You lose.';
+                        // wait for the death animations to finish then hide the move buttons and show the reset button
+                        setTimeout(function() {
+                            moveButtons.forEach((button) => {
+                                button.style.display = 'none';
+                            });
+                            
+                            // show the reset button based on the screen size
+                            if (windowWidth < 600) {
+                                resetButton.style.display = 'block';
+                            } else if (windowWidth >= 600 && windowWidth < 900) {
+                                resetButton.style.display = 'inline-block';
+                            } else {
+                                resetButton.style.display = 'inline-block';
+                            }
+                        }, 1000);
+                    }
+                }, 2500);
+            }
+
+            this.reset = () => {
+                let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+                
+                // set the guide
+                document.querySelector('.guide').innerHTML = 'Choose your move.';
+
+                // enable the move buttons
+                document.querySelectorAll('.button').forEach((button) => {
+                    button.style.filter = 'opacity(1)';
+                    button.style.pointerEvents = 'all';
+
+                    // show the buttons based on the screen size
+                    if (windowWidth < 600) {
+                        button.style.display = 'block';
+                    } else if (windowWidth >= 600 && windowWidth < 900) {
+                        button.style.display = 'inline-block';
+                    } else {
+                        button.style.display = 'inline-block';
+                    }
+                });
+
+                // hide the reset button
+                document.querySelector('.reset').style.display = 'none';
+
+                Player.reset();
+                Computer.reset();
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
+            // check if move button is visible
+            // if yes change their display
+            // if not change the display of reset button
+            document.querySelectorAll('.moveButton').forEach((button) => {
+                if(button.style.display != 'none') {
+                    // show the buttons based on the screen size
+                    if (windowWidth < 600) {
+                        button.style.display = 'block';
+                    } else if (windowWidth >= 600 && windowWidth < 900) {
+                        button.style.display = 'inline-block';
+                    } else {
+                        button.style.display = 'inline-block';
+                    }
+
+                    console.log('ahah');
+                } else {
+                    let resetButton = document.querySelector('.reset');
+
+                    // show the reset button based on the screen size
+                    if (windowWidth < 600) {
+                        resetButton.style.display = 'block';
+                    } else if (windowWidth >= 600 && windowWidth < 900) {
+                        resetButton.style.display = 'inline-block';
+                    } else {
+                        resetButton.style.display = 'inline-block';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
