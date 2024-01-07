@@ -2,7 +2,7 @@
 A simple rock-paper-scissors game with animated graphics written in vanilla HTML, CSS, and JavaScript.
 
 ## Live View
-[Click here](https://drive.google.com/drive/folders/1WeVpNUpmO7RB34O7yfYJYc5E8ojxjLwU?usp=sharing) to play the game in your browser (available for mobiles, tablets, and desktops)
+[Click here](https://benjaminn1202.github.io/Animated-Rock-Paper-Scissors/) to play the game in your browser (available for mobiles, tablets, and desktops)
 
 ## Images
 ![Screenshot number 1 of rock-paper-scissors game](showcase/screenshot-1.webp)
